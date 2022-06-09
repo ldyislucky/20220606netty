@@ -37,9 +37,19 @@ public class gServer {
                         }
                     });//设置workergroup的事件处理逻辑
 
-            ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
-            channelFuture.channel().closeFuture().sync();
-            System.out.println("服务器已经启动！");
+            ChannelFuture channelFuture = serverBootstrap.bind(port).sync();//sync()不知道有啥用,至少在本界面没有发现
+            channelFuture.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                    if (!channelFuture.isSuccess()){
+                        System.out.println("监听失败！");
+                    }else {
+                        System.out.println("监听成功！");
+                    }
+                }
+            });
+            //channelFuture.channel().closeFuture().sync();//1.防止跳转到finally,从而使程序直接结束  2.监听关闭事件，跳转到优雅的关闭
+            System.out.println("有closeFuture().sync()的话这句话是打印不出来的！");
         }finally {
             bossGroup.shutdownGracefully();//使线程池优雅退出
             workerGroup.shutdownGracefully();
